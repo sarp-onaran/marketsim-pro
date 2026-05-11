@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="ocean">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI destekli ürün pazar simülasyonu - Gerçek verilerle ürününüzü test edin">
+  <title>MarketSim PRO — AI Pazar Simülasyonu</title>
+  <link rel="stylesheet" href="css/main.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">◈</div>
+      <div>
+        <h1>MarketSim PRO</h1>
+        <p>AI Market Intelligence</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="live-indicator">
+        <div class="live-dot"></div>
+        <span>CANLI VERİ</span>
+        <span id="live-clock" style="margin-left:4px"></span>
+      </div>
+      <div class="theme-switcher" id="theme-switcher">
+        <button class="theme-btn" data-theme="dark" title="Koyu Tema">🌙</button>
+        <button class="theme-btn" data-theme="light" title="Açık Tema">☀️</button>
+        <button class="theme-btn active" data-theme="ocean" title="Okyanus Tema">🌊</button>
+      </div>
+      <button class="btn btn-primary" onclick="document.querySelector('.nav-tab[data-view=new]').click()">+ Yeni Analiz</button>
+    </div>
+  </header>
+
+  <nav class="nav-tabs">
+    <button class="nav-tab" data-view="dashboard">◉ Kontrol Paneli <span class="badge">0</span></button>
+    <button class="nav-tab active" data-view="new">⬡ Yeni Simülasyon</button>
+    <button class="nav-tab" data-view="results">▦ Analiz Raporu</button>
+    <button class="nav-tab" data-view="compare">⇄ Karşılaştırma</button>
+  </nav>
+
+  <main class="main">
+    <!-- DASHBOARD -->
+    <section id="section-dashboard" class="section">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Kontrol Paneli</div>
+          <div class="section-subtitle">TÜM SİMÜLASYONLAR · CANLI İZLEME</div>
+        </div>
+      </div>
+      <div id="dashboard-content"></div>
+    </section>
+
+    <!-- NEW SIMULATION -->
+    <section id="section-new" class="section active">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Yeni Pazar Simülasyonu</div>
+          <div class="section-subtitle">ÜRÜN BİLGİLERİNİ GİRİN · AI ANALİZ BAŞLATSIN</div>
+        </div>
+        <div class="confidence-badge">◈ Monte Carlo Simülasyonu · 10.000 İterasyon</div>
+      </div>
+
+      <!-- MODE SWITCHER -->
+      <div class="card" style="margin-bottom:20px;padding:16px 22px">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:14px;font-weight:700">Mod Seçin:</span>
+            <div class="mode-switcher" id="mode-switcher">
+              <button type="button" class="mode-btn active" data-mode="quick">⚡ Hızlı Mod</button>
+              <button type="button" class="mode-btn" data-mode="detailed">⚙️ Detaylı Mod</button>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--text-dim);max-width:400px" id="mode-hint">
+            Sadece birkaç bilgi girin, gerisini biz halledelim. Teknik bilgi gerekmez!
+          </div>
+        </div>
+      </div>
+
+      <form id="sim-form">
+        <!-- ===== HIZLI MOD ===== -->
+        <div id="quick-form">
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-title"><span class="icon">⚡</span> Ne satmak istiyorsun?</div>
+            <div class="form-grid">
+              <div class="form-group" style="grid-column:1/-1">
+                <label for="product-name">Ürünün adı ne?</label>
+                <input type="text" id="product-name" placeholder="örn: Proteinli Şekersiz Lolipop, Akıllı Su Şişesi, Organik Çay..." required style="font-size:16px;padding:14px">
+              </div>
+              <div class="form-group">
+                <label for="category-select">Bu ürün hangi kategoride?</label>
+                <select id="category-select" required></select>
+              </div>
+              <div class="form-group">
+                <label for="product-desc">Kısaca açıkla (opsiyonel)</label>
+                <textarea id="product-desc" rows="2" placeholder="Ürünün neyi farklı? Neden insanlar bunu alsın?"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-title"><span class="icon">🌍</span> Nerede satacaksın?</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="country-select">Ülke</label>
+                <select id="country-select" required></select>
+              </div>
+              <div class="form-group">
+                <label for="product-price">Kaç TL'ye satacaksın? (tahmini)</label>
+                <input type="number" id="product-price" value="25" min="0.1" step="0.1" style="font-size:16px;padding:14px">
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-title"><span class="icon">🎯</span> Birkaç hızlı soru</div>
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div>
+                <label style="font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text-dim);letter-spacing:1px;display:block;margin-bottom:8px">BU ÜRÜNÜ EN İYİ HANGİ KELİME TANIMLAR?</label>
+                <div class="checkbox-group">
+                  <div class="checkbox-item" id="is-healthy">🥗 Sağlıklı</div>
+                  <div class="checkbox-item" id="is-tech">📱 Teknolojik</div>
+                  <div class="checkbox-item" id="is-eco">♻️ Eko-Dostu</div>
+                  <div class="checkbox-item" id="is-trendy">🔥 Trend</div>
+                </div>
+              </div>
+              <div>
+                <label style="font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text-dim);letter-spacing:1px;display:block;margin-bottom:8px">PİYASADA BUNA BENZER ÜRÜN ÇOK MU?</label>
+                <select id="competition-level" style="width:100%;max-width:400px">
+                  <option value="low">Hayır, pek yok — benzersiz bir ürün</option>
+                  <option value="medium" selected>Biraz var ama çok değil</option>
+                  <option value="high">Evet, çok fazla rakip var</option>
+                  <option value="veryHigh">Aşırı kalabalık bir pazar</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hidden defaults for quick mode -->
+          <input type="hidden" id="product-cost" value="8">
+          <input type="hidden" id="purchase-freq" value="2">
+          <input type="hidden" id="monthly-opex" value="10000">
+          <input type="hidden" id="initial-investment" value="150000">
+          <input type="hidden" id="marketing-budget" value="100000">
+          <input type="hidden" id="sim-duration" value="12">
+          <input type="hidden" id="target-gender" value="all">
+          <input type="hidden" id="innovation-score" value="65">
+          <input type="hidden" id="uniqueness-score" value="60">
+          <input type="hidden" id="viral-score" value="50">
+          <input type="hidden" id="repeat-score" value="60">
+        </div>
+
+        <!-- ===== DETAYLI MOD ===== -->
+        <div id="detailed-form" style="display:none">
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-title"><span class="icon">◈</span> Ürün Tanımı</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="d-product-name">Ürün Adı</label>
+                <input type="text" id="d-product-name" placeholder="örn: Proteinli Şekersiz Lolipop">
+              </div>
+              <div class="form-group">
+                <label for="d-category-select">Kategori</label>
+                <select id="d-category-select"></select>
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label for="d-product-desc">Açıklama</label>
+                <textarea id="d-product-desc" rows="2" placeholder="Ürünü kısaca tanımlayın..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-title"><span class="icon">◈</span> Finansal Parametreler</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="d-product-price">Satış Fiyatı (birim)</label>
+                <input type="number" id="d-product-price" value="25" min="0.1" step="0.1">
+              </div>
+              <div class="form-group">
+                <label for="d-product-cost">Birim Maliyet</label>
+                <input type="number" id="d-product-cost" value="8" min="0.1" step="0.1">
+              </div>
+              <div class="form-group">
+                <label for="d-purchase-freq">Aylık Satın Alma Sıklığı</label>
+                <input type="number" id="d-purchase-freq" value="2" min="0.1" step="0.1">
+              </div>
+              <div class="form-group">
+                <label for="d-monthly-opex">Aylık İşletme Gideri</label>
+                <input type="number" id="d-monthly-opex" value="10000" min="0">
+              </div>
+              <div class="form-group">
+                <label for="d-initial-investment">Başlangıç Yatırımı</label>
+                <input type="number" id="d-initial-investment" value="150000" min="0">
+              </div>
+              <div class="form-group">
+                <label for="d-marketing-budget">Toplam Pazarlama Bütçesi</label>
+                <input type="number" id="d-marketing-budget" value="100000" min="0">
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-title"><span class="icon">◈</span> Hedef Pazar</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="d-country-select">Ülke / Pazar</label>
+                <select id="d-country-select"></select>
+              </div>
+              <div class="form-group">
+                <label for="d-sim-duration">Simülasyon Süresi (Ay)</label>
+                <input type="number" id="d-sim-duration" value="12" min="3" max="60">
+              </div>
+              <div class="form-group">
+                <label for="d-competition-level">Rekabet Seviyesi</label>
+                <select id="d-competition-level">
+                  <option value="low">Düşük — Az rakip var</option>
+                  <option value="medium" selected>Orta — Normal rekabet</option>
+                  <option value="high">Yüksek — Çok rakip</option>
+                  <option value="veryHigh">Çok Yüksek — Kızgın rekabet</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="d-target-gender">Hedef Cinsiyet</label>
+                <select id="d-target-gender">
+                  <option value="all">Tümü</option>
+                  <option value="male">Erkek</option>
+                  <option value="female">Kadın</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-top:16px">
+              <label style="font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text-dim);letter-spacing:1px;display:block;margin-bottom:8px">HEDEF YAŞ GRUPLARI</label>
+              <div class="checkbox-group" id="age-groups">
+                <div class="checkbox-item active" data-value="0-14">0-14</div>
+                <div class="checkbox-item active" data-value="15-24">15-24</div>
+                <div class="checkbox-item active" data-value="25-34">25-34</div>
+                <div class="checkbox-item active" data-value="35-44">35-44</div>
+                <div class="checkbox-item" data-value="45-54">45-54</div>
+                <div class="checkbox-item" data-value="55-64">55-64</div>
+                <div class="checkbox-item" data-value="65+">65+</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-title"><span class="icon">◈</span> Dağıtım & Özellikler</div>
+            <div style="margin-bottom:16px">
+              <label style="font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text-dim);letter-spacing:1px;display:block;margin-bottom:8px">DAĞITIM KANALLARI</label>
+              <div class="checkbox-group" id="channels">
+                <div class="checkbox-item active" data-value="retail">Perakende</div>
+                <div class="checkbox-item active" data-value="online">Online</div>
+                <div class="checkbox-item" data-value="wholesale">Toptan</div>
+                <div class="checkbox-item" data-value="directSales">Doğrudan</div>
+                <div class="checkbox-item" data-value="franchise">Franchise</div>
+                <div class="checkbox-item" data-value="subscription">Abonelik</div>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>İnovasyon Skoru</label>
+                <div class="slider-container">
+                  <input type="range" id="d-innovation-score" min="0" max="100" value="70" data-unit="%">
+                  <span class="slider-value">70%</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Benzersizlik Skoru</label>
+                <div class="slider-container">
+                  <input type="range" id="d-uniqueness-score" min="0" max="100" value="65" data-unit="%">
+                  <span class="slider-value">65%</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Viral Potansiyel</label>
+                <div class="slider-container">
+                  <input type="range" id="d-viral-score" min="0" max="100" value="50" data-unit="%">
+                  <span class="slider-value">50%</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Tekrar Satın Alma Oranı</label>
+                <div class="slider-container">
+                  <input type="range" id="d-repeat-score" min="0" max="100" value="60" data-unit="%">
+                  <span class="slider-value">60%</span>
+                </div>
+              </div>
+            </div>
+            <div style="margin-top:16px">
+              <label style="font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text-dim);letter-spacing:1px;display:block;margin-bottom:8px">ÜRÜN ETİKETLERİ</label>
+              <div class="checkbox-group">
+                <div class="checkbox-item" id="d-is-healthy">Sağlıklı</div>
+                <div class="checkbox-item" id="d-is-tech">Teknolojik</div>
+                <div class="checkbox-item" id="d-is-eco">Eko-Dostu</div>
+                <div class="checkbox-item" id="d-is-trendy">Trend</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align:center;padding:16px 0">
+          <button type="submit" class="btn btn-primary btn-lg" id="run-sim-btn">
+            ◈ Simülasyonu Başlat — 10.000 Senaryo
+          </button>
+          <div class="data-source" style="justify-content:center;border:none;margin-top:12px">
+            Veriler: World Bank · IMF · TÜİK · Eurostat · UN Population
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="section-results" class="section">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Analiz Raporu</div>
+          <div class="section-subtitle">DETAYLI PAZAR ANALİZİ · GÜVEN ARALIĞI %95</div>
+        </div>
+        <button class="btn btn-secondary" onclick="document.querySelector('.nav-tab[data-view=new]').click()">+ Yeni Analiz</button>
+      </div>
+      <div id="results-content">
+        <div class="empty-state">
+          <div class="empty-icon">▦</div>
+          <h3>Henüz Analiz Yok</h3>
+          <p>Bir simülasyon çalıştırarak detaylı raporu görüntüleyin.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPARE -->
+    <section id="section-compare" class="section">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Karşılaştırma Matrisi</div>
+          <div class="section-subtitle">ÇOK ÜRÜNLÜ ANALİZ · YAN YANA DEĞERLENDİRME</div>
+        </div>
+      </div>
+      <div id="compare-content"></div>
+    </section>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
